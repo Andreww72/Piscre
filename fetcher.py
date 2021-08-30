@@ -5,6 +5,7 @@ import requests
 import weather as w
 from typing import List, Dict
 
+
 def get_time() -> str:
     return time.time()
 
@@ -16,8 +17,26 @@ def get_day() -> str:
 def get_weather() -> Dict:
     return {}
 
+
+def get_weather_icon(icon, width):
+    """"
+    Return the icon, resized, for a given weather - works for all darksky values of "icon"
+    """
+    img = Image.open(os.path.join(picdir, "weather/", icon + ".png"))
+    return ImageOps.invert(img.resize(width, width))
+
+
 def get_news() -> Dict:
-    return {}
+    """Get top Australian news headlines from newsapi.org"""
+    url = "https://newsapi.org/v2/top-headlines?country=au"
+    headers = {"X-Api-Key": os.environ["news_key"]}
+    try:
+        response = requests.get(url, headers=headers)
+        data = json.loads(response.text)
+        return data
+    except (requests. ConnectionError, requests.Timeout, requests.TooManyRedirects) as e:
+        print(e)
+        return None
 
 
 def get_coins() -> Dict:
@@ -32,11 +51,8 @@ def get_coins() -> Dict:
         "X-CMC_PRO_API_KEY": os.environ["coinmarketcap_key"],
     }
 
-    session = requests.Session()
-    session.headers.update(headers)
-
     try:
-        response = session.get(url, params=parameters)
+        response = requests.get(url, headers=headers, params=parameters)
         data = json.loads(response.text)
         return data
     except (requests.ConnectionError, requests.Timeout, requests.TooManyRedirects) as e:
