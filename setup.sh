@@ -8,3 +8,5 @@ pip3 install spidev
 pip3 install read_env
 pip3 install requests
 pip3 install pyowm
+pip3 install python-twitter
+
