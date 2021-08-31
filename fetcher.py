@@ -3,7 +3,7 @@ import re
 import json
 import twitter
 import requests
-import weather as w
+from pyowm.owm import OWM
 from datetime import datetime
 from typing import List, Dict, Tuple
 
@@ -64,7 +64,69 @@ def get_wotd() -> Tuple[str, str]:
 
 
 def get_weather() -> Dict:
-    return {}
+    owm = OWM(os.environ["openweather_key"])
+    mgr = owm.weather_manager()
+    canberra_lat = -35.28346
+    canberra_long = 149.12807
+
+    def fetch_weather():
+        try:
+            data = mgr.one_call(lat=canberra_lat, lon=canberra_long, exclude="minutely")
+            return data
+        except Exception as e:
+            print(e)
+            return None
+    
+    def _parse_data(weather):
+        temp = weather.get_temperature(unit="celsius")
+        humidity = weather.get_humidity()
+        weather_code = weather.get_weather_code()
+        # Get feels like as well
+        return (
+            weather_code,
+            temp.get("min"),
+            temp.get("max"),
+            temp.get("temp"),
+            humidity,
+        )
+
+    data = fetch_weather()
+    weather = dict()
+
+    current = data.current
+    current_res = {
+        "temp": current.temperature(),
+        "humidity": current.humidity,
+        "wind": current.wind(),
+        "status": (current.status, current.detailed_status,)
+    }
+    weather["current"] = current_res
+    
+    daily = data.forecast_daily
+    daily_res = list()
+    for i in range(7):
+        day_res = {
+            "temp": daily[i].temperature(),
+            "humidity": daily[i].humidity,
+            "wind": daily[i].wind(),
+            "status": (daily[i].status, daily[i].detailed_status,)
+        }
+        daily_res.append(day_res)
+    weather["daily"] = daily_res
+    
+    hourly = data.forecast_hourly
+    hourly_res = list()
+    for i in range(24):
+        hour_res = {
+            "temp": hourly[i].temperature(),
+            "humidity": hourly[i].humidity,
+            "wind": hourly[i].wind(),
+            "status": (hourly[i].status, hourly[i].detailed_status,)
+        }
+        hourly_res.append(hour_res)
+    weather["hourly"] = hourly_res
+
+    return weather
 
 
 def get_weather_icon(icon, width):
@@ -76,7 +138,9 @@ def get_weather_icon(icon, width):
 
 
 def get_news() -> Dict:
-    """Get top Australian news headlines from newsapi.org"""
+    """
+    Get top Australian news headlines from newsapi.org
+    """
     url = "https://newsapi.org/v2/top-headlines?country=au"
     headers = {"X-Api-Key": os.environ["news_key"]}
     return get_request(url, headers=headers)
@@ -95,7 +159,7 @@ def get_coins() -> Dict:
     headers = {
         "Accepts": "application/json",
         "X-CMC_PRO_API_KEY": os.environ["coinmarketcap_key"],
-    }
-    
+        }
+
     return get_request(url, headers=headers, params=parameters)
 
