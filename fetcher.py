@@ -69,35 +69,19 @@ def get_weather() -> Dict:
     canberra_lat = -35.28346
     canberra_long = 149.12807
 
-    def fetch_weather():
-        try:
-            data = mgr.one_call(lat=canberra_lat, lon=canberra_long, exclude="minutely")
-            return data
-        except Exception as e:
-            print(e)
-            return None
+    try:
+        data = mgr.one_call(lat=canberra_lat, lon=canberra_long, exclude="minutely")
+    except Exception as e:
+        print(e)
+        return None
     
-    def _parse_data(weather):
-        temp = weather.get_temperature(unit="celsius")
-        humidity = weather.get_humidity()
-        weather_code = weather.get_weather_code()
-        # Get feels like as well
-        return (
-            weather_code,
-            temp.get("min"),
-            temp.get("max"),
-            temp.get("temp"),
-            humidity,
-        )
-
-    data = fetch_weather()
     weather = dict()
 
     current = data.current
     current_res = {
         "temp": current.temperature(),
         "humidity": current.humidity,
-        "wind": current.wind(),
+        "wind": current.wind()["speed"],
         "status": (current.status, current.detailed_status,)
     }
     weather["current"] = current_res
@@ -108,7 +92,7 @@ def get_weather() -> Dict:
         day_res = {
             "temp": daily[i].temperature(),
             "humidity": daily[i].humidity,
-            "wind": daily[i].wind(),
+            "wind": daily[i].wind()["speed"],
             "status": (daily[i].status, daily[i].detailed_status,)
         }
         daily_res.append(day_res)
@@ -120,7 +104,7 @@ def get_weather() -> Dict:
         hour_res = {
             "temp": hourly[i].temperature(),
             "humidity": hourly[i].humidity,
-            "wind": hourly[i].wind(),
+            "wind": hourly[i].wind()["speed"],
             "status": (hourly[i].status, hourly[i].detailed_status,)
         }
         hourly_res.append(hour_res)
@@ -143,7 +127,11 @@ def get_news() -> Dict:
     """
     url = "https://newsapi.org/v2/top-headlines?country=au"
     headers = {"X-Api-Key": os.environ["news_key"]}
-    return get_request(url, headers=headers)
+    data = get_request(url, headers=headers)
+    titles = []
+    for i in range(4):
+        titles.append(data["articles"][i]["title"])
+    return titles
 
 
 def get_coins() -> Dict:
@@ -159,7 +147,18 @@ def get_coins() -> Dict:
     headers = {
         "Accepts": "application/json",
         "X-CMC_PRO_API_KEY": os.environ["coinmarketcap_key"],
-        }
+    }
 
-    return get_request(url, headers=headers, params=parameters)
+    data = get_request(url, headers=headers, params=parameters)
+    coins = {}
+    for ticker, coin in data["data"].items():
+        aud_data = coin["quote"]["AUD"]
+        coins[ticker] = {
+            "price": aud_data["price"],
+            "volume": aud_data["volume_24h"],
+            "market_cap": aud_data["market_cap"],
+            "percent_24h": aud_data["percent_change_24h"],
+            "percent_30d": aud_data["percent_change_30d"]
+        }
+    return coins
 
