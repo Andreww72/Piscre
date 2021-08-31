@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import twitter
 import requests
@@ -19,7 +20,7 @@ def get_request(url, headers=None, params=None):
         return None
 
 
-def get_datetime() -> str:
+def get_datetime() -> Tuple[str, str]:
     """
     Return current time and day of the week
     """
@@ -27,12 +28,12 @@ def get_datetime() -> str:
     day = datetime.today().weekday()
     day_str = {
         0: "Monday",
-        2: "Tuesday",
-        3: "Wednesday",
-        4: "Thursday",
-        5: "Friday",
-        6: "Saturday",
-        7: "Sunday"
+        1: "Tuesday",
+        2: "Wednesday",
+        3: "Thursday",
+        4: "Friday",
+        5: "Saturday",
+        6: "Sunday"
     }
     return (now, day_str[day],)
 
@@ -50,26 +51,16 @@ def get_wotd() -> Tuple[str, str]:
         access_token_secret=os.environ["twitter_access_token_secret"]
     )
 
-    statuses = twit.GetUserTimeline(screen_name="OED", count=2, exclude_replies=True)
-    print(statuses)
+    tweets = twit.GetUserTimeline(screen_name="OED", count=5, exclude_replies=True)
 
-    # Extract word
+    # Extract word, try each tweet until success (sometimes tweets aren't WOTD)
     predicate = "OED Word of the Day:"
-    #tweet = data.find(tweet => {
-    #  return tweet.text.indexOf(predicate) === 0
-    #})
-    # wotd = tweet.text.match(/^(.*)$/m)[0].replace(predicate, '').trim().split(', ')[0].trim()
+    for tweet in tweets:
+        if predicate in tweet.text:
+            wotd = tweet.text.split(":")[1].strip()
+            wotd = wotd.split("http")[0]
 
-    # Get root then definition of the word from Oxford Dictionaries
-    # https://developer.oxforddictionaries.com/documentation
-    headers = {"app_id": app_id, "app_key": app_key}
-    lemmas_url = f"https://od-api.oxforddictionaries.com/api/v2/lemmas/EN-GB/{wotd.lower()}"
-    root = get_request(lemmas_url, headers=headers)
-
-    dict_url = f"https://od-api.oxforddictionaries.com/api/v2/entries/EN-GB/{root.lower()}"
-    defined = get_request(dict_url, headers=headers)
-
-    return (wotd, defined,)
+    return wotd
 
 
 def get_weather() -> Dict:
