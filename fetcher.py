@@ -139,7 +139,7 @@ def get_weather_icon(status, time) -> str:
     elif "fog" in status:
         return "fog.png"
     else:
-        return "clear-{day_night}.png"
+        return f"clear-{day_night}.png"
 
 
 def get_news() -> Dict:
