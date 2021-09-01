@@ -59,7 +59,10 @@ def get_wotd() -> Tuple[str, str]:
         if predicate in tweet.text:
             wotd = tweet.text.split(":")[1].strip()
             wotd = wotd.split("http")[0]
-
+    
+    # Remove potential ... unicode ellipse character
+    encoded = wotd.encode("ascii", "ignore")
+    wotd = encoded.decode()
     return wotd
 
 
@@ -100,7 +103,7 @@ def get_weather() -> Dict:
     
     hourly = data.forecast_hourly
     hourly_res = list()
-    for i in range(24):
+    for i in range(12):
         hour_res = {
             "temp": hourly[i].temperature(),
             "humidity": hourly[i].humidity,
@@ -113,24 +116,42 @@ def get_weather() -> Dict:
     return weather
 
 
-def get_weather_icon(icon, width):
+def get_weather_icon(status, time) -> str:
     """"
-    Return the icon, resized, for a given weather - works for all darksky values of "icon"
+    Return the icon path for given status
     """
-    img = Image.open(os.path.join(picdir, "weather/", icon + ".png"))
-    return ImageOps.invert(img.resize(width, width))
+    day_night = "night"
+    status = status.lower()
+
+    if 6 < time < 18:
+        day_night = "day"
+    
+    if "clear" in status:
+        return f"clear-{day_night}.png"
+    elif "cloudy" in status:
+        return f"partly-cloudy-{day_night}.png"
+    elif "rain" in status:
+        return "rain.png"
+    elif "snow" in status:
+        return "snow.png"
+    elif "sleet" in status:
+        return "sleet.png"
+    elif "fog" in status:
+        return "fog.png"
+    else:
+        return "clear-{day_night}.png"
 
 
 def get_news() -> Dict:
     """
     Get top Australian news headlines from newsapi.org
     """
-    url = "https://newsapi.org/v2/top-headlines?country=au"
+    url = "https://newsapi.org/v2/top-headlines?sources=abc-news-au,australian-financial-review"
     headers = {"X-Api-Key": os.environ["news_key"]}
     data = get_request(url, headers=headers)
     titles = []
     for i in range(4):
-        titles.append(data["articles"][i]["title"])
+        titles.append(data["articles"][i]["title"].split("-")[0].strip())
     return titles
 
 
