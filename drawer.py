@@ -18,7 +18,8 @@ weather = fetcher.get_weather()
 crypto = fetcher.get_coins()
 news = fetcher.get_news()
 wotd = fetcher.get_wotd()
-dt_res, day = fetcher.get_datetime()
+dt_res, day_num = fetcher.get_datetime()
+day = fetcher.day_from_num(day_num)
 
 try:
     # Setup screen
@@ -68,17 +69,17 @@ try:
     current = weather["current"]
     w_icon = Image.open(os.path.join(weatherdir, fetcher.get_weather_icon(current['status'][0], int(dt[2][0:2]))))
     w_icon = w_icon.resize((64, 64))
-    Himage.paste(w_icon, (10, 340)) 
+    Himage.paste(w_icon, (10, 340))
     draw.text((80, 340), f"Canberra is {current['status'][0]} at {round(current['temp']['temp'] + KELVIN, 1)}'", font=font24, fill=0)
     draw.text((80, 365), f"Feels {round(current['temp']['feels_like'] + KELVIN, 1)}' with {current['humidity']}% & {round(current['wind'], 1)}km/h", font=font24, fill=0)
     
     daily = weather["daily"]
     for i, wday in enumerate(daily):
-        draw.rectangle((10+i*125, 400, (i+1)*125, 520), fill=255)
-        draw.text((10+i*125, 400), "Day", fill=0)
-        draw.text((10+i*125, 430), "Temp", fill=0)
+        day_txt = fetcher.day_from_num((day_num+i) % 7)
+        draw.rectangle((10+i*123, 420, 10+(i+1)*123, 520), fill=255, outline="black")
+        draw.text((15+i*123, 430), f"{day_txt[0:3]}: {round(wday['temp']['min'] + KELVIN)}-{round(wday['temp']['max'] + KELVIN)}", font=font24, fill=0)
         w_icon = Image.open(os.path.join(weatherdir, fetcher.get_weather_icon(wday['status'][0], 12)))
-        w_icon = w_icon.resize((32, 32))
+        w_icon = w_icon.resize((48, 48))
         Himage.paste(w_icon, (40+i*125, 460))
 
     epd.display(epd.getbuffer(Himage))
