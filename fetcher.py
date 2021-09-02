@@ -9,9 +9,8 @@ from typing import List, Dict, Tuple
 
 
 def get_request(url, headers=None, params=None):
-    """
-    Perform a standard get request with optional headers and/or parammeters
-    """
+    """Standard get request with optional headers and parammeters"""
+    
     try:
         response = requests.get(url, headers=headers, params=params)
         return json.loads(response.text)
@@ -20,12 +19,9 @@ def get_request(url, headers=None, params=None):
         return None
 
 
-def get_datetime() -> Tuple[str, str]:
-    """
-    Return current time and day of the week
-    """
-    now = datetime.now().strftime('%b-%d-%I%M%p-%G')
-    day = datetime.today().weekday()
+def day_from_num(day_num: int) -> str:
+    """Day of week from number"""
+    
     day_str = {
         0: "Monday",
         1: "Tuesday",
@@ -35,13 +31,20 @@ def get_datetime() -> Tuple[str, str]:
         5: "Saturday",
         6: "Sunday"
     }
-    return (now, day_str[day],)
+    return day_str[day_num]
+
+
+def get_datetime() -> Tuple[str, str]:
+    """Return current time and day of the week"""
+
+    now = datetime.now().strftime("%b-%d-%I%M%p-%G")
+    day_num = datetime.today().weekday()
+    return (now, day_num)
 
 
 def get_wotd() -> Tuple[str, str]:
-    """
-    Return the word of the day from OED Twitter account, with Oxford dictionary definition
-    """
+    """Word of the day from OED Twitter"""
+    
     # Get OED word of the day from Twitter
     # https://developer.twitter.com/en/docs/twitter-api/tweets/timelines/introduction
     twit = twitter.Api(
@@ -67,6 +70,8 @@ def get_wotd() -> Tuple[str, str]:
 
 
 def get_weather() -> Dict:
+    """Get current weather and forecast"""
+
     owm = OWM(os.environ["openweather_key"])
     mgr = owm.weather_manager()
     canberra_lat = -35.28346
@@ -117,9 +122,8 @@ def get_weather() -> Dict:
 
 
 def get_weather_icon(status, time) -> str:
-    """"
-    Return the icon path for given status
-    """
+    """"Return the icon path for given status"""
+    
     day_night = "night"
     status = status.lower()
 
@@ -143,9 +147,8 @@ def get_weather_icon(status, time) -> str:
 
 
 def get_news() -> Dict:
-    """
-    Get top Australian news headlines from newsapi.org
-    """
+    """Top Australian news headlines from newsapi.org"""
+    
     url = "https://newsapi.org/v2/top-headlines?sources=abc-news-au,australian-financial-review"
     headers = {"X-Api-Key": os.environ["news_key"]}
     data = get_request(url, headers=headers)
@@ -156,9 +159,8 @@ def get_news() -> Dict:
 
 
 def get_coins() -> Dict:
-    """
-    Return the current price of Bitcoin and Ethereum in Australian Dollars
-    """
+    """Current info for Bitcoin and Ethereum in AUD"""
+
     # https://coinmarketcap.com/api/documentation/v1/#operation/getV1CryptocurrencyQuotesLatest
     url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest"
     parameters = {
