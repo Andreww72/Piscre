@@ -12,4 +12,4 @@ Steps
 3b) CoinMarkertCap
 3c) News API
 3d) Twitter
-4) Run with "python3 drawer.py"
+4) Run with "python3 drawer.py", e.g. crontab or systemd

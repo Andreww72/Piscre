@@ -10,7 +10,7 @@ from typing import List, Dict, Tuple
 
 def get_request(url, headers=None, params=None):
     """Standard get request with optional headers and parammeters"""
-    
+
     try:
         response = requests.get(url, headers=headers, params=params)
         return json.loads(response.text)
@@ -21,7 +21,7 @@ def get_request(url, headers=None, params=None):
 
 def day_from_num(day_num: int) -> str:
     """Day of week from number"""
-    
+
     day_str = {
         0: "Monday",
         1: "Tuesday",
@@ -44,7 +44,7 @@ def get_datetime() -> Tuple[str, str]:
 
 def get_wotd() -> Tuple[str, str]:
     """Word of the day from OED Twitter"""
-    
+
     # Get OED word of the day from Twitter
     # https://developer.twitter.com/en/docs/twitter-api/tweets/timelines/introduction
     twit = twitter.Api(
@@ -62,7 +62,7 @@ def get_wotd() -> Tuple[str, str]:
         if predicate in tweet.text:
             wotd = tweet.text.split(":")[1].strip()
             wotd = wotd.split("http")[0]
-    
+
     # Remove potential ... unicode ellipse character
     encoded = wotd.encode("ascii", "ignore")
     wotd = encoded.decode()
@@ -82,7 +82,7 @@ def get_weather() -> Dict:
     except Exception as e:
         print(e)
         return None
-    
+
     weather = dict()
 
     current = data.current
@@ -105,7 +105,7 @@ def get_weather() -> Dict:
         }
         daily_res.append(day_res)
     weather["daily"] = daily_res
-    
+
     hourly = data.forecast_hourly
     hourly_res = list()
     for i in range(12):
@@ -123,13 +123,13 @@ def get_weather() -> Dict:
 
 def get_weather_icon(status, time) -> str:
     """"Return the icon path for given status"""
-    
+
     day_night = "night"
     status = status.lower()
 
     if 6 < time < 18:
         day_night = "day"
-    
+
     if "clear" in status:
         return f"clear-{day_night}.png"
     elif "cloudy" in status:
@@ -148,12 +148,12 @@ def get_weather_icon(status, time) -> str:
 
 def get_news() -> Dict:
     """Top Australian news headlines from newsapi.org"""
-    
+
     url = "https://newsapi.org/v2/top-headlines?sources=abc-news-au,australian-financial-review"
     headers = {"X-Api-Key": os.environ["news_key"]}
     data = get_request(url, headers=headers)
     titles = []
-    for i in range(4):
+    for i in range(6):
         titles.append(data["articles"][i]["title"].split("-")[0].strip())
     return titles
 

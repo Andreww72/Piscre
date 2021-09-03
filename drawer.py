@@ -4,14 +4,15 @@ import os
 import sys
 import fetcher
 from read_env import read_env
-from waveshare_epd import epd7in5_HD
 from PIL import Image, ImageDraw, ImageFont
+sys.path.append(os.path.dirname(os.path.realpath(__file__)))
+from waveshare_epd import epd7in5_HD
 
 
 KELVIN = -273.15
-picdir = "pic"
+picdir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'pic')
 weatherdir = os.path.join(picdir, "weather")
-read_env()
+read_env(path=os.path.join(os.path.dirname(os.path.realpath(__file__)), ".env"))
 
 # Collect data
 weather = fetcher.get_weather()
@@ -40,9 +41,17 @@ try:
     draw.line((0, 30, 880, 30), fill=0)
     
     # News titles
-    for i, item in enumerate(news):
-        draw.text((10, 40+i*35), item, font=font24, fill=0)
-        draw.text((10, 55+i*35), "."*220, font=font18, fill=0)
+    count, limit = 0, 4
+    for item in news:
+        # I do not want sports scores or live crap
+        if count >= limit:
+            break
+        if "score" in item.lower():
+            continue
+        draw.text((10, 40+count*35), item, font=font24, fill=0)
+        draw.text((10, 55+count*35), "."*220, font=font18, fill=0)
+        count += 1
+    
     draw.line((0, 190, 880, 190), fill=0)
 
     # Word of the day with def
