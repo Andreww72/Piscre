@@ -46,7 +46,7 @@ try:
         # I do not want sports scores or live crap
         if count >= limit:
             break
-        if "score" in item.lower():
+        if "score" in item.lower() or "live" in item.lower():
             continue
         draw.text((10, 40+count*35), item, font=font24, fill=0)
         draw.text((10, 55+count*35), "."*220, font=font18, fill=0)

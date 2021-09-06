@@ -153,8 +153,8 @@ def get_news() -> Dict:
     headers = {"X-Api-Key": os.environ["news_key"]}
     data = get_request(url, headers=headers)
     titles = []
-    for i in range(6):
-        titles.append(data["articles"][i]["title"].split("-")[0].strip())
+    for i in range(7):
+        titles.append(data["articles"][i]["title"].strip())
     return titles
 
 
