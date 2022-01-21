@@ -11,3 +11,5 @@ Steps:
 3) Get free API keys for OpenWeatherMap, CoinMarkertCap, News API, & Twitter
 4) Run with "python3 drawer.py", e.g. with crontab:
 0 6,8,12,16,20 *   *   *   python3 /path/to/Piscre/drawer.py
+  - crontab -l
+  - crontab -e
